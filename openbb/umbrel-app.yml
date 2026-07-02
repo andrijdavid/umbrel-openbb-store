@@ -1,0 +1,40 @@
+manifestVersion: 1
+id: openbb
+category: finance
+name: OpenBB
+version: "4.7.2"
+tagline: Open-source financial data API for analysts, quants and AI agents
+description: >-
+  OpenBB is a self-hosted financial data platform. This app runs the
+  open-source OpenBB Platform API on your Umbrel and gives you a private
+  gateway to pull equities, options, crypto, currencies, economic and
+  fixed-income data from many providers through a single REST API.
+
+
+  The app opens to a simple start page with an interactive API explorer
+  (Swagger UI) where you can browse and call every endpoint straight from the
+  browser. Many datasets work out of the box with no keys (for example Yahoo
+  Finance and public sources); premium providers such as FMP, Intrinio, Tiingo
+  or Benzinga are enabled by adding your own API keys.
+
+
+  OpenBB has no separate self-hosted GUI. If you use OpenBB Workspace, you can
+  point it at this backend as a custom data source.
+
+
+  Note: provider API keys are stored in
+  app-data/openbb/data/openbb/.openbb_platform/user_settings.json and are read
+  on start. Data-heavy queries can take a few seconds on first call.
+releaseNotes: ""
+developer: OpenBB
+website: https://openbb.co
+dependencies: []
+repo: https://github.com/OpenBB-finance/OpenBB
+support: https://github.com/OpenBB-finance/OpenBB/issues
+port: 8199
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: Andrij David
+submission: https://github.com/getumbrel/umbrel-apps/pull/0000

@@ -1,0 +1,10 @@
+:80 {
+	# start page at root, everything else (the OpenBB API + /docs) proxied to openbb-api
+	handle / {
+		root * /srv
+		file_server
+	}
+	handle {
+		reverse_proxy server:6900
+	}
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenBB Platform API</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+         display:flex; min-height:100vh; align-items:center; justify-content:center;
+         background:#0d0f12; color:#e7e9ee; }
+  main { max-width:640px; padding:40px 28px; }
+  h1 { font-size:1.7rem; margin:0 0 .2em; }
+  p { color:#aab1bd; }
+  a.btn { display:inline-block; margin:18px 12px 6px 0; padding:12px 20px; border-radius:10px;
+          background:#2f6df6; color:#fff; text-decoration:none; font-weight:600; }
+  a.btn.secondary { background:#242832; color:#e7e9ee; }
+  code { background:#1a1d23; padding:2px 6px; border-radius:5px; font-size:.9em; }
+  .url { margin-top:22px; padding:14px 16px; background:#1a1d23; border-radius:10px; word-break:break-all; }
+  small { color:#7c8494; }
+</style>
+</head>
+<body>
+<main>
+  <h1>OpenBB Platform API</h1>
+  <p>Your private, self-hosted financial data gateway is running. Explore and
+     call every endpoint from the browser, or connect a client such as OpenBB
+     Workspace to the backend URL below.</p>
+
+  <a class="btn" href="docs">Open API explorer</a>
+  <a class="btn secondary" href="openapi.json">OpenAPI schema</a>
+
+  <div class="url">
+    <small>Backend URL</small><br>
+    <code id="url">loading…</code>
+  </div>
+
+  <p style="margin-top:22px"><small>
+    Free providers (e.g. Yahoo Finance) work with no setup. To enable premium
+    providers, add your API keys to
+    <code>user_settings.json</code> under this app's data directory and restart
+    the app.
+  </small></p>
+</main>
+<script>document.getElementById('url').textContent = window.location.origin;</script>
+</body>
+</html>
