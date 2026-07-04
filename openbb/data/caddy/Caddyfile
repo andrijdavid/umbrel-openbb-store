@@ -1,10 +1,36 @@
+{
+	admin off
+}
+
+# Internal front door (behind Umbrel auth via app_proxy)
 :80 {
-	# start page at root, everything else (the OpenBB API + /docs) proxied to openbb-api
+	# config UI backend
+	handle_path /_config/* {
+		reverse_proxy config:8000
+	}
+	# start / config page
 	handle / {
 		root * /srv
 		file_server
 	}
+	# everything else = the OpenBB API (incl /docs, /openapi.json, /widgets.json)
 	handle {
 		reverse_proxy server:6900
 	}
+}
+
+# External endpoint for OpenBB Workspace. Off by default: only serves when the
+# toggle flag file exists, and only under the secret token path prefix.
+:8188 {
+	@enabled file {
+		root /flags
+		try_files external.enabled
+	}
+	handle @enabled {
+		handle_path /{$OPENBB_EXTERNAL_TOKEN}/* {
+			reverse_proxy server:6900
+		}
+		respond 403
+	}
+	respond 403
 }

@@ -6,42 +6,129 @@
 <title>OpenBB Platform API</title>
 <style>
   :root { color-scheme: light dark; }
-  body { margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-         display:flex; min-height:100vh; align-items:center; justify-content:center;
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
          background:#0d0f12; color:#e7e9ee; }
-  main { max-width:640px; padding:40px 28px; }
-  h1 { font-size:1.7rem; margin:0 0 .2em; }
-  p { color:#aab1bd; }
-  a.btn { display:inline-block; margin:18px 12px 6px 0; padding:12px 20px; border-radius:10px;
-          background:#2f6df6; color:#fff; text-decoration:none; font-weight:600; }
-  a.btn.secondary { background:#242832; color:#e7e9ee; }
-  code { background:#1a1d23; padding:2px 6px; border-radius:5px; font-size:.9em; }
-  .url { margin-top:22px; padding:14px 16px; background:#1a1d23; border-radius:10px; word-break:break-all; }
-  small { color:#7c8494; }
+  main { max-width:720px; margin:0 auto; padding:40px 22px 80px; }
+  h1 { font-size:1.6rem; margin:0 0 .1em; }
+  h2 { font-size:1.05rem; margin:0 0 12px; }
+  p { color:#aab1bd; margin:.3em 0; }
+  small, .muted { color:#7c8494; }
+  a { color:#5a8dff; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
+  a.btn, button { display:inline-block; padding:10px 16px; border-radius:9px; border:0;
+        background:#2f6df6; color:#fff; text-decoration:none; font:inherit; font-weight:600; cursor:pointer; }
+  a.btn.secondary, button.secondary { background:#242832; color:#e7e9ee; }
+  .card { background:#15181e; border:1px solid #222; border-radius:14px; padding:20px 22px; margin:20px 0; }
+  code, input { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  code { background:#1a1d23; padding:2px 6px; border-radius:5px; font-size:.88em; word-break:break-all; }
+  input { background:#0d0f12; border:1px solid #333; color:#e7e9ee; padding:9px 11px; border-radius:8px; font-size:14px; }
+  input[type=text],input[type=password]{ flex:1 1 160px; min-width:120px; }
+  ul { margin:8px 0; padding-left:18px; }
+  li { margin:4px 0; }
+  li button { background:none; color:#ff6b6b; padding:0 6px; font-size:13px; }
+  .switch { display:flex; align-items:center; gap:12px; }
+  .toggle { position:relative; width:52px; height:30px; flex:0 0 auto; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; inset:0; background:#3a3f4b; border-radius:30px; transition:.2s; }
+  .slider:before { content:""; position:absolute; height:22px; width:22px; left:4px; top:4px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider { background:#2f9e57; }
+  input:checked + .slider:before { transform:translateX(22px); }
+  .endpoint { margin-top:14px; padding:12px 14px; background:#0d0f12; border:1px solid #2a2f3a; border-radius:9px; }
+  .hidden { display:none; }
+  .warn { color:#e6b566; }
 </style>
 </head>
 <body>
 <main>
   <h1>OpenBB Platform API</h1>
-  <p>Your private, self-hosted financial data gateway is running. Explore and
-     call every endpoint from the browser, or connect a client such as OpenBB
-     Workspace to the backend URL below.</p>
+  <p>Your private, self-hosted financial data gateway. Free providers (e.g. Yahoo
+     Finance) work with no setup.</p>
 
-  <a class="btn" href="docs">Open API explorer</a>
-  <a class="btn secondary" href="openapi.json">OpenAPI schema</a>
-
-  <div class="url">
-    <small>Backend URL</small><br>
-    <code id="url">loading…</code>
+  <div class="row">
+    <a class="btn" href="/docs">Open API explorer</a>
+    <a class="btn secondary" href="/openapi.json">OpenAPI schema</a>
   </div>
 
-  <p style="margin-top:22px"><small>
-    Free providers (e.g. Yahoo Finance) work with no setup. To enable premium
-    providers, add your API keys to
-    <code>user_settings.json</code> under this app's data directory and restart
-    the app.
-  </small></p>
+  <div class="card">
+    <h2>Provider API keys</h2>
+    <p class="muted">Enable premium providers by storing their key. Applied
+       immediately, no restart. Enter the credential name OpenBB expects (e.g.
+       <code>fmp_api_key</code>, <code>intrinio_api_key</code>, <code>tiingo_token</code>).</p>
+    <ul id="providers"><li class="muted">loading…</li></ul>
+    <div class="row">
+      <input id="cred-name" type="text" placeholder="fmp_api_key" autocomplete="off">
+      <input id="cred-value" type="password" placeholder="key value" autocomplete="off">
+      <button id="cred-add">Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>External access (OpenBB Workspace)</h2>
+    <p class="muted">Expose this backend so you can add it to
+       <a href="https://pro.openbb.co" target="_blank" rel="noreferrer">OpenBB Workspace</a>.
+       Off by default. Only the secret URL below can reach it.</p>
+    <div class="switch">
+      <label class="toggle"><input type="checkbox" id="ext-toggle"><span class="slider"></span></label>
+      <span id="ext-label" class="muted">disabled</span>
+    </div>
+    <div id="ext-details" class="hidden">
+      <div class="endpoint">
+        <small>Backend URL to paste into OpenBB Workspace</small><br>
+        <code id="ext-url">…</code>
+      </div>
+      <p class="muted" style="margin-top:12px">To reach it from the internet
+        (Workspace runs in the cloud), forward host port <code>8188</code> on your
+        router to this Umbrel, or use a tunnel, then swap the host in the URL for
+        your public address. <span class="warn">Keep the secret URL private.</span></p>
+    </div>
+  </div>
 </main>
-<script>document.getElementById('url').textContent = window.location.origin;</script>
+
+<script>
+const $ = s => document.querySelector(s);
+async function api(path, opts){ const r = await fetch('/_config'+path, opts); return r.json(); }
+
+function render(st){
+  const ul = $('#providers');
+  ul.innerHTML = st.providers.length
+    ? '' : '<li class="muted">none set</li>';
+  st.providers.forEach(name => {
+    const li = document.createElement('li');
+    li.textContent = name + ' ';
+    const b = document.createElement('button');
+    b.textContent = 'remove';
+    b.onclick = async () => { render(await api('/credentials', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, value:''})})
+      .then(()=>load())); };
+    li.appendChild(b); ul.appendChild(li);
+  });
+
+  $('#ext-toggle').checked = st.external_enabled;
+  $('#ext-label').textContent = st.external_enabled ? 'enabled' : 'disabled';
+  $('#ext-details').classList.toggle('hidden', !st.external_enabled);
+  const base = location.protocol + '//' + location.hostname + ':' + st.external_port + '/' + st.token;
+  $('#ext-url').textContent = base;
+}
+
+async function load(){ render(await api('/status')); }
+
+$('#cred-add').onclick = async () => {
+  const name = $('#cred-name').value.trim().toLowerCase();
+  const value = $('#cred-value').value.trim();
+  if(!name) return;
+  const r = await api('/credentials', {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name, value})});
+  if(r.error){ alert(r.error); return; }
+  $('#cred-name').value=''; $('#cred-value').value='';
+  load();
+};
+$('#ext-toggle').onchange = async (e) => {
+  await api('/external', {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({enabled: e.target.checked})});
+  load();
+};
+load();
+</script>
 </body>
 </html>
