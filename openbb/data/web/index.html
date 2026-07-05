@@ -3,132 +3,219 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
 <title>OpenBB Platform API</title>
 <style>
-  :root { color-scheme: light dark; }
-  * { box-sizing: border-box; }
-  body { margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-         background:#0d0f12; color:#e7e9ee; }
-  main { max-width:720px; margin:0 auto; padding:40px 22px 80px; }
-  h1 { font-size:1.6rem; margin:0 0 .1em; }
-  h2 { font-size:1.05rem; margin:0 0 12px; }
-  p { color:#aab1bd; margin:.3em 0; }
-  small, .muted { color:#7c8494; }
-  a { color:#5a8dff; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
-  a.btn, button { display:inline-block; padding:10px 16px; border-radius:9px; border:0;
-        background:#2f6df6; color:#fff; text-decoration:none; font:inherit; font-weight:600; cursor:pointer; }
-  a.btn.secondary, button.secondary { background:#242832; color:#e7e9ee; }
-  .card { background:#15181e; border:1px solid #222; border-radius:14px; padding:20px 22px; margin:20px 0; }
-  code, input { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-  code { background:#1a1d23; padding:2px 6px; border-radius:5px; font-size:.88em; word-break:break-all; }
-  input { background:#0d0f12; border:1px solid #333; color:#e7e9ee; padding:9px 11px; border-radius:8px; font-size:14px; }
-  input[type=text],input[type=password]{ flex:1 1 160px; min-width:120px; }
-  ul { margin:8px 0; padding-left:18px; }
-  li { margin:4px 0; }
-  li button { background:none; color:#ff6b6b; padding:0 6px; font-size:13px; }
-  .switch { display:flex; align-items:center; gap:12px; }
-  .toggle { position:relative; width:52px; height:30px; flex:0 0 auto; }
-  .toggle input { opacity:0; width:0; height:0; }
-  .slider { position:absolute; inset:0; background:#3a3f4b; border-radius:30px; transition:.2s; }
-  .slider:before { content:""; position:absolute; height:22px; width:22px; left:4px; top:4px; background:#fff; border-radius:50%; transition:.2s; }
-  input:checked + .slider { background:#2f9e57; }
-  input:checked + .slider:before { transform:translateX(22px); }
-  .endpoint { margin-top:14px; padding:12px 14px; background:#0d0f12; border:1px solid #2a2f3a; border-radius:9px; }
-  .hidden { display:none; }
-  .warn { color:#e6b566; }
+  :root{
+    --bg:#000; --bg2:#070707; --card:#131313; --card2:#1a1a1a;
+    --line:#232327; --line2:#2f2f36;
+    --text:#eaeaea; --muted:#8a8a90; --faint:#5a5a5f;
+    --blue:#0190D8; --blue-hi:#2ba6e6; --blue-dim:#0088cc;
+    --tint:#0d2a3a; --green:#16a34a; --red:#dc2626;
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --head:'Manrope','Inter',system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1100px 500px at 50% -220px,#0b2b3d 0%,var(--bg2) 55%,var(--bg) 100%);
+       color:var(--text);font:15px/1.55 var(--sans);min-height:100vh}
+  main{max-width:760px;margin:0 auto;padding:44px 22px 90px}
+
+  header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .logo{width:44px;height:22px;color:var(--blue);flex:0 0 auto}
+  .brand{font-family:var(--head);font-weight:800;font-size:1.5rem;letter-spacing:-.01em}
+  .brand span{color:var(--blue)}
+  .pill{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
+        color:var(--muted);background:#0e0e0e;border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);box-shadow:0 0 0 0 rgba(22,163,74,.5)}
+  .pill.ok{color:#7ee0a5} .pill.ok .dot{background:var(--green);animation:pulse 2s infinite}
+  .pill.bad{color:#f19b9b} .pill.bad .dot{background:var(--red)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.45)}70%{box-shadow:0 0 0 6px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+
+  .lede{color:var(--muted);margin:4px 0 26px;max-width:60ch}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;border:1px solid transparent;
+       font:inherit;font-weight:650;text-decoration:none;cursor:pointer;transition:.15s}
+  .btn.primary{background:var(--blue);color:#00171f}
+  .btn.primary:hover{background:var(--blue-hi)}
+  .btn.ghost{background:#101013;color:var(--text);border-color:var(--line2)}
+  .btn.ghost:hover{border-color:var(--blue);color:#cdeaff}
+  .btn svg{width:16px;height:16px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:18px 0}
+  .card h2{font-family:var(--head);font-size:1.08rem;font-weight:750;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  .card h2 svg{width:17px;height:17px;color:var(--blue)}
+  .card .hint{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .card .hint code{color:#cdeaff}
+
+  code{font-family:var(--mono);background:#0d0d0d;border:1px solid var(--line);padding:2px 7px;border-radius:6px;font-size:.86em;word-break:break-all}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:4px}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--tint);border:1px solid #14486a;
+        color:#bfe6fb;border-radius:9px;padding:6px 8px 6px 12px;font-family:var(--mono);font-size:13px}
+  .chip button{background:none;border:0;color:#7fb8d6;cursor:pointer;font-size:16px;line-height:1;padding:0 2px}
+  .chip button:hover{color:#fff}
+  .empty{color:var(--faint);font-size:13.5px}
+
+  .field{display:flex;gap:10px;flex-wrap:wrap}
+  input{background:#0b0b0b;border:1px solid var(--line2);color:var(--text);padding:11px 13px;border-radius:10px;
+        font:14px var(--sans)}
+  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(1,144,216,.18)}
+  input.name{flex:1 1 190px;font-family:var(--mono)} input.val{flex:2 1 220px}
+
+  .switchrow{display:flex;align-items:center;gap:14px}
+  .toggle{position:relative;width:52px;height:30px;flex:0 0 auto}
+  .toggle input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:#2a2a30;border:1px solid var(--line2);border-radius:30px;transition:.2s;cursor:pointer}
+  .slider:before{content:"";position:absolute;height:22px;width:22px;left:3px;top:3px;background:#e6e6e6;border-radius:50%;transition:.2s}
+  input:checked + .slider{background:var(--blue);border-color:var(--blue)}
+  input:checked + .slider:before{transform:translateX(22px);background:#fff}
+  .state{font-weight:650} .state.on{color:#7ee0a5} .state.off{color:var(--muted)}
+
+  .reveal{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}
+  .reveal.hidden{display:none}
+  .urlbox{display:flex;gap:8px;align-items:stretch}
+  .urlbox code{flex:1;display:flex;align-items:center;background:#0b0b0b;border-color:var(--line2)}
+  .copy{flex:0 0 auto;padding:0 14px;border-radius:9px;border:1px solid var(--line2);background:#101013;color:var(--text);cursor:pointer;font-weight:600}
+  .copy:hover{border-color:var(--blue);color:#cdeaff}
+  ol.steps{margin:14px 0 0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  ol.steps li{margin:6px 0}
+  .warn{margin-top:12px;font-size:13px;color:#e6b566;background:#241c0c;border:1px solid #4a3a12;border-radius:9px;padding:10px 12px}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+         background:#0d0d0d;border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:11px;
+         font-size:14px;transition:.2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{border-color:#5a1f1f;color:#f2b3b3}
+  footer{margin-top:34px;color:var(--faint);font-size:12.5px;text-align:center}
+  footer a{color:var(--muted);text-decoration:none} footer a:hover{color:var(--blue)}
 </style>
 </head>
 <body>
 <main>
-  <h1>OpenBB Platform API</h1>
-  <p>Your private, self-hosted financial data gateway. Free providers (e.g. Yahoo
-     Finance) work with no setup.</p>
+  <header>
+    <svg class="logo" viewBox="0 0 32 16" aria-hidden="true"><path fill="currentColor" d="M19 12.98v-.995h9.002v1.992H19v-.996Zm0-7.968v-.996h11v1.992H19v-.996Zm12-2.989H17V15.97h13V9.992H19V8h13V2.023h-1ZM4 12.981v-.996H13v1.992H4v-.996ZM2 5.012v-.996h11v1.992H2v-.996Zm13-4.98v1.991H0V8h13v1.992H2v5.977h13V2.023h2V.031h-2Z"/></svg>
+    <div class="brand">Open<span>BB</span> API</div>
+    <span class="pill" id="status-pill"><span class="dot"></span><span id="status-text">checking…</span></span>
+  </header>
 
-  <div class="row">
-    <a class="btn" href="/docs">Open API explorer</a>
-    <a class="btn secondary" href="/openapi.json">OpenAPI schema</a>
+  <p class="lede">Your private, self-hosted financial data gateway. Query equities,
+     options, crypto, economics and more. Free providers such as Yahoo Finance work
+     with no setup.</p>
+
+  <div class="actions">
+    <a class="btn primary" href="/docs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      API explorer
+    </a>
+    <a class="btn ghost" href="/openapi.json">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M16 4h4v4M20 4l-8 8"/></svg>
+      OpenAPI schema
+    </a>
   </div>
 
   <div class="card">
-    <h2>Provider API keys</h2>
-    <p class="muted">Enable premium providers by storing their key. Applied
-       immediately, no restart. Enter the credential name OpenBB expects (e.g.
-       <code>fmp_api_key</code>, <code>intrinio_api_key</code>, <code>tiingo_token</code>).</p>
-    <ul id="providers"><li class="muted">loading…</li></ul>
-    <div class="row">
-      <input id="cred-name" type="text" placeholder="fmp_api_key" autocomplete="off">
-      <input id="cred-value" type="password" placeholder="key value" autocomplete="off">
-      <button id="cred-add">Save</button>
+    <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a5 5 0 1 0-4 8l-2 2 2 2 2-2 1-1 2-2a5 5 0 0 0 1-4z"/><circle cx="16.5" cy="8.5" r="1" fill="currentColor" stroke="none"/></svg>Provider API keys</h2>
+    <p class="hint">Store a provider's key to unlock premium data. Applied instantly, no restart.
+       Use the exact credential name OpenBB expects, e.g. <code>fmp_api_key</code>.</p>
+    <div class="chips" id="chips"><span class="empty">loading…</span></div>
+    <div class="field">
+      <input class="name" id="cred-name" list="providers" type="text" placeholder="fmp_api_key" autocomplete="off" spellcheck="false">
+      <datalist id="providers">
+        <option value="fmp_api_key"><option value="polygon_api_key"><option value="intrinio_api_key">
+        <option value="tiingo_token"><option value="benzinga_api_key"><option value="fred_api_key">
+        <option value="nasdaq_api_key"><option value="alpha_vantage_api_key"><option value="tradingeconomics_api_key">
+      </datalist>
+      <input class="val" id="cred-value" type="password" placeholder="key value" autocomplete="off">
+      <button class="btn primary" id="cred-add">Save key</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>External access (OpenBB Workspace)</h2>
-    <p class="muted">Expose this backend so you can add it to
-       <a href="https://pro.openbb.co" target="_blank" rel="noreferrer">OpenBB Workspace</a>.
-       Off by default. Only the secret URL below can reach it.</p>
-    <div class="switch">
+    <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>External access</h2>
+    <p class="hint">Expose this backend to add it as a custom data connector in
+       <a href="https://pro.openbb.co" target="_blank" rel="noreferrer" style="color:#cdeaff">OpenBB Workspace</a>.
+       Off by default — only the secret URL below can reach it.</p>
+    <div class="switchrow">
       <label class="toggle"><input type="checkbox" id="ext-toggle"><span class="slider"></span></label>
-      <span id="ext-label" class="muted">disabled</span>
+      <span class="state off" id="ext-state">Disabled</span>
     </div>
-    <div id="ext-details" class="hidden">
-      <div class="endpoint">
-        <small>Backend URL to paste into OpenBB Workspace</small><br>
+
+    <div class="reveal hidden" id="ext-details">
+      <label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:7px">Backend URL for OpenBB Workspace</label>
+      <div class="urlbox">
         <code id="ext-url">…</code>
+        <button class="copy" id="ext-copy">Copy</button>
       </div>
-      <p class="muted" style="margin-top:12px">To reach it from the internet
-        (Workspace runs in the cloud), forward host port <code>8188</code> on your
-        router to this Umbrel, or use a tunnel, then swap the host in the URL for
-        your public address. <span class="warn">Keep the secret URL private.</span></p>
+      <ol class="steps">
+        <li>In OpenBB Workspace, add a custom backend and paste the URL above.</li>
+        <li>To reach it over the internet, forward host port <code>8188</code> on your router to this Umbrel (or use a tunnel), then replace the host in the URL with your public address.</li>
+      </ol>
+      <div class="warn">Anyone with this secret URL can query your data providers. Keep it private and turn this off when unused.</div>
     </div>
   </div>
+
+  <footer>Powered by the open-source <a href="https://openbb.co" target="_blank" rel="noreferrer">OpenBB Platform</a> · secured behind your Umbrel</footer>
 </main>
 
+<div class="toast" id="toast"></div>
+
 <script>
-const $ = s => document.querySelector(s);
-async function api(path, opts){ const r = await fetch('/_config'+path, opts); return r.json(); }
+const $=s=>document.querySelector(s);
+const api=(p,o)=>fetch('/_config'+p,o).then(r=>r.json());
+let toastT;
+function toast(msg,err){const t=$('#toast');t.textContent=msg;t.className='toast show'+(err?' err':'');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',2200);}
 
 function render(st){
-  const ul = $('#providers');
-  ul.innerHTML = st.providers.length
-    ? '' : '<li class="muted">none set</li>';
-  st.providers.forEach(name => {
-    const li = document.createElement('li');
-    li.textContent = name + ' ';
-    const b = document.createElement('button');
-    b.textContent = 'remove';
-    b.onclick = async () => { render(await api('/credentials', {method:'POST',
-      headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, value:''})})
-      .then(()=>load())); };
-    li.appendChild(b); ul.appendChild(li);
+  const chips=$('#chips');
+  chips.innerHTML='';
+  if(!st.providers.length){chips.innerHTML='<span class="empty">No provider keys stored yet.</span>';}
+  st.providers.forEach(name=>{
+    const c=document.createElement('span');c.className='chip';c.textContent=name+' ';
+    const b=document.createElement('button');b.textContent='×';b.title='Remove';
+    b.onclick=async()=>{const r=await api('/credentials',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,value:''})});render(r.providers?{...st,providers:r.providers}:st);toast('Removed '+name);load();};
+    c.appendChild(b);chips.appendChild(c);
   });
+  const on=st.external_enabled;
+  $('#ext-toggle').checked=on;
+  const s=$('#ext-state');s.textContent=on?'Enabled':'Disabled';s.className='state '+(on?'on':'off');
+  $('#ext-details').classList.toggle('hidden',!on);
+  $('#ext-url').textContent=location.protocol+'//'+location.hostname+':'+st.external_port+'/'+st.token;
+}
+async function load(){try{render(await api('/status'));}catch(e){toast('Config service unreachable',true);}}
 
-  $('#ext-toggle').checked = st.external_enabled;
-  $('#ext-label').textContent = st.external_enabled ? 'enabled' : 'disabled';
-  $('#ext-details').classList.toggle('hidden', !st.external_enabled);
-  const base = location.protocol + '//' + location.hostname + ':' + st.external_port + '/' + st.token;
-  $('#ext-url').textContent = base;
+async function checkApi(){
+  const p=$('#status-pill'),t=$('#status-text');
+  try{const r=await fetch('/openapi.json',{method:'HEAD'});
+    if(r.ok){p.className='pill ok';t.textContent='API online';}else throw 0;}
+  catch(e){p.className='pill bad';t.textContent='API offline';}
 }
 
-async function load(){ render(await api('/status')); }
+$('#cred-add').onclick=async()=>{
+  const name=$('#cred-name').value.trim().toLowerCase(), value=$('#cred-value').value.trim();
+  if(!name){toast('Enter a credential name',true);return;}
+  const r=await api('/credentials',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,value})});
+  if(r.error){toast(r.error,true);return;}
+  $('#cred-name').value='';$('#cred-value').value='';toast('Saved '+name);load();
+};
+$('#cred-value').addEventListener('keydown',e=>{if(e.key==='Enter')$('#cred-add').click();});
+$('#ext-toggle').onchange=async e=>{
+  await api('/external',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:e.target.checked})});
+  toast(e.target.checked?'External access on':'External access off');load();
+};
+$('#ext-copy').onclick=()=>{
+  const txt=$('#ext-url').textContent;
+  const done=()=>toast('URL copied');
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(done,()=>fallback());}
+  else fallback();
+  function fallback(){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);
+    ta.select();try{document.execCommand('copy');done();}catch(e){toast('Copy failed',true);}ta.remove();}
+};
 
-$('#cred-add').onclick = async () => {
-  const name = $('#cred-name').value.trim().toLowerCase();
-  const value = $('#cred-value').value.trim();
-  if(!name) return;
-  const r = await api('/credentials', {method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name, value})});
-  if(r.error){ alert(r.error); return; }
-  $('#cred-name').value=''; $('#cred-value').value='';
-  load();
-};
-$('#ext-toggle').onchange = async (e) => {
-  await api('/external', {method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({enabled: e.target.checked})});
-  load();
-};
-load();
+checkApi();load();
 </script>
 </body>
 </html>
