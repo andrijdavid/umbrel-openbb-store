@@ -25,18 +25,19 @@ services:
 
   # OpenBB Platform API (FastAPI, 6900). settings + provider keys persist under /data/.openbb_platform
   server:
-    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:53687df01d470486f60f0196598b991c05830c533542c9b49b82e4be2f7ec5cb
+    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:f8c4ba2647d843819dc879227c7c88faa2a499570e8a5ad31b456edfe8f407c6
     restart: on-failure
     user: "1000:1000"
     volumes:
       - ${APP_DATA_DIR}/data/openbb:/data
 
-  # tiny config backend: edits provider keys in user_settings.json, toggles external access
+  # tiny config backend (same image as server, run via command override):
+  # edits provider keys in user_settings.json, toggles external access
   config:
-    image: python:3.11-slim@sha256:b27df5841f3355e9473f9a516d38a6783b6c8dfeacaf2d14a240f443b368ddb6
+    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:f8c4ba2647d843819dc879227c7c88faa2a499570e8a5ad31b456edfe8f407c6
     restart: on-failure
     user: "1000:1000"
-    command: ["python", "/app/server.py"]
+    entrypoint: ["python", "/opt/config-server.py"]
     environment:
       OPENBB_SETTINGS_FILE: /data/.openbb_platform/user_settings.json
       FLAGS_DIR: /flags
@@ -44,6 +45,5 @@ services:
       EXTERNAL_PORT: "8188"
       CONFIG_PORT: "8000"
     volumes:
-      - ${APP_DATA_DIR}/data/config-app:/app:ro
       - ${APP_DATA_DIR}/data/openbb:/data
       - ${APP_DATA_DIR}/data/config:/flags
