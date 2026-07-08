@@ -23,18 +23,22 @@ services:
       - ${APP_DATA_DIR}/data/web/index.html:/srv/index.html:ro
       - ${APP_DATA_DIR}/data/config:/flags:ro
 
-  # OpenBB Platform API (FastAPI, 6900). settings + provider keys persist under /data/.openbb_platform
+  # OpenBB Platform API (FastAPI, 6900). The image entrypoint is a supervisor that
+  # installs plugins listed in /data/plugins.json into the persisted user site and
+  # reloads the API when that manifest changes. Settings/keys persist under /data/.openbb_platform
   server:
-    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:f8c4ba2647d843819dc879227c7c88faa2a499570e8a5ad31b456edfe8f407c6
+    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:d7da0d2fbb97f5e7603a97c35a674a8f43fcbc2539762339d8c699c697a32e20
     restart: on-failure
     user: "1000:1000"
+    environment:
+      PLUGINS_MANIFEST: /data/plugins.json
     volumes:
       - ${APP_DATA_DIR}/data/openbb:/data
 
   # tiny config backend (same image as server, run via command override):
   # edits provider keys in user_settings.json, toggles external access
   config:
-    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:f8c4ba2647d843819dc879227c7c88faa2a499570e8a5ad31b456edfe8f407c6
+    image: ghcr.io/andrijdavid/openbb-umbrel:4.7.2@sha256:d7da0d2fbb97f5e7603a97c35a674a8f43fcbc2539762339d8c699c697a32e20
     restart: on-failure
     user: "1000:1000"
     entrypoint: ["python", "/opt/config-server.py"]
@@ -44,6 +48,7 @@ services:
       EXTERNAL_TOKEN: ${APP_OPENBB_EXTERNAL_TOKEN}
       EXTERNAL_PORT: "8188"
       CONFIG_PORT: "8000"
+      PLUGINS_MANIFEST: /data/plugins.json
     volumes:
       - ${APP_DATA_DIR}/data/openbb:/data
       - ${APP_DATA_DIR}/data/config:/flags

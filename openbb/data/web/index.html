@@ -88,6 +88,19 @@
          font-size:14px;transition:.2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .toast.err{border-color:#5a1f1f;color:#f2b3b3}
+  .catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px}
+  .plug{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;display:flex;flex-direction:column;gap:6px}
+  .plug .top{display:flex;align-items:center;gap:8px}
+  .plug .nm{font-weight:650;font-size:14px}
+  .plug .tag{font-size:10.5px;font-weight:600;color:#8fb4c8;background:#0c2230;border:1px solid #163a4e;border-radius:6px;padding:1px 6px}
+  .plug .tag.key{color:#e6b566;background:#241c0c;border-color:#4a3a12}
+  .plug .tag.heavy{color:#e39aa0;background:#2a1416;border-color:#5a1f22}
+  .plug .ds{font-size:12px;color:var(--muted);flex:1;line-height:1.4}
+  .plug .add{align-self:flex-start;margin-top:2px;padding:6px 12px;border-radius:8px;border:1px solid var(--line2);background:#101013;color:var(--text);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+  .plug .add:hover{border-color:var(--blue);color:#cdeaff}
+  .chip.installing{background:#241c0c;border-color:#4a3a12;color:#e6b566}
+  .chip .st{width:7px;height:7px;border-radius:50%;background:#7ee0a5}
+  .chip.installing .st{background:#e6b566;animation:pulse 1.6s infinite}
   footer{margin-top:34px;color:var(--faint);font-size:12.5px;text-align:center}
   footer a{color:var(--muted);text-decoration:none} footer a:hover{color:var(--blue)}
 </style>
@@ -156,6 +169,20 @@
     </div>
   </div>
 
+  <div class="card">
+    <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v3H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2z"/></svg>Plugins</h2>
+    <p class="hint">Add OpenBB extensions (data providers &amp; analysis toolkits). Installed
+       on demand; the API reloads automatically to activate them, no reinstall.</p>
+
+    <div id="installed-wrap" style="margin-bottom:18px">
+      <label style="font-size:12.5px;color:var(--muted)">Installed</label>
+      <div class="chips" id="plugin-chips"><span class="empty">none yet</span></div>
+    </div>
+
+    <label style="font-size:12.5px;color:var(--muted)">Discover</label>
+    <div id="catalog" class="catalog"><span class="empty">loading…</span></div>
+  </div>
+
   <footer>Powered by the open-source <a href="https://openbb.co" target="_blank" rel="noreferrer">OpenBB Platform</a> · secured behind your Umbrel</footer>
 </main>
 
@@ -215,7 +242,48 @@ $('#ext-copy').onclick=()=>{
     ta.select();try{document.execCommand('copy');done();}catch(e){toast('Copy failed',true);}ta.remove();}
 };
 
-checkApi();load();
+// ---- plugins ----
+let pluginPoll;
+function renderPlugins(st){
+  const inManifest = new Set(st.plugins.map(p=>p.name));
+  const chips = $('#plugin-chips');
+  chips.innerHTML = st.plugins.length ? '' : '<span class="empty">none yet</span>';
+  st.plugins.forEach(p=>{
+    const c=document.createElement('span');
+    c.className='chip'+(p.installed?'':' installing');
+    const dot=document.createElement('span');dot.className='st';c.appendChild(dot);
+    c.appendChild(document.createTextNode(' '+p.name.replace(/^openbb-/,'')+(p.installed?'':' · installing…')+' '));
+    const b=document.createElement('button');b.textContent='×';b.title='Remove';
+    b.onclick=async()=>{await api('/plugins/remove',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:p.name})});toast('Removing '+p.name+' — API reloads shortly');loadPlugins(true);};
+    c.appendChild(b);chips.appendChild(c);
+  });
+
+  const cat=$('#catalog');cat.innerHTML='';
+  st.catalog.filter(x=>!inManifest.has(x.name)).forEach(x=>{
+    const d=document.createElement('div');d.className='plug';
+    const top=document.createElement('div');top.className='top';
+    const nm=document.createElement('span');nm.className='nm';nm.textContent=x.label;top.appendChild(nm);
+    const tag=document.createElement('span');tag.className='tag'+(x.heavy?' heavy':x.key?' key':'');
+    tag.textContent=x.heavy?'heavy':x.key?'API key':x.group;top.appendChild(tag);
+    const ds=document.createElement('div');ds.className='ds';ds.textContent=x.desc;
+    const add=document.createElement('button');add.className='add';add.textContent='Install';
+    add.onclick=async()=>{add.disabled=true;add.textContent='Installing…';
+      const r=await api('/plugins',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:x.name})});
+      if(r.error){toast(r.error,true);add.disabled=false;add.textContent='Install';return;}
+      toast(x.label+' queued — API reloads to activate (~1 min)');loadPlugins(true);};
+    d.appendChild(top);d.appendChild(ds);d.appendChild(add);cat.appendChild(d);
+  });
+  if(!cat.children.length) cat.innerHTML='<span class="empty">All catalog plugins added.</span>';
+}
+async function loadPlugins(poll){
+  try{ const st=await api('/plugins'); renderPlugins(st);
+    clearTimeout(pluginPoll);
+    if(poll || st.plugins.some(p=>!p.installed)) pluginPoll=setTimeout(()=>loadPlugins(true),5000);
+  }catch(e){}
+}
+
+checkApi();load();loadPlugins();
 </script>
 </body>
 </html>
